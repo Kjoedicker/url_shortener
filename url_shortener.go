@@ -41,7 +41,7 @@ func (u UrlShortener) UrlRedirectHandler(w http.ResponseWriter, r *http.Request)
 
 	if shortenedURL, ok := u.getUrl(url); ok {
 		fmt.Println("Attempting to redirect", url, u.UrlMap[url])
-		http.Redirect(w, r, shortenedURL, http.StatusSeeOther)
+		http.Redirect(w, r, shortenedURL, http.StatusFound)
 	}
 
 	w.WriteHeader(http.StatusNotFound)
