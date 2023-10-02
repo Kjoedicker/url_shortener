@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var expect = assert.Equal
+
 func Test_RootHandler(t *testing.T) {
 	urlShortener := UrlShortener{UrlMap: make(map[string]string)}
 	t.Run("GET /", func(t *testing.T) {
@@ -87,6 +89,34 @@ func Test_URLRedirectHandler(t *testing.T) {
 
 			assert.Equal(t, resp.StatusCode, 302, "Should return 302, indicating redirect")
 			assert.Equal(t, mockUrl, location.String(), "Should have a location of: "+mockUrl)
+		})
+	})
+}
+
+func Test_UrlShortenerHandler(t *testing.T) {
+	urlShortener := UrlShortener{UrlMap: make(map[string]string)}
+	mockShortUrl := "8675309"
+	mockUrl := "http://example.com"
+
+	t.Run("GET /shorten/{url}", func(t *testing.T) {
+
+		t.Run("When the short URL does not exist", func(t *testing.T) {
+			req := httptest.NewRequest("GET", "http://localhost:8000/shorten/"+mockShortUrl, nil)
+			req = mux.SetURLVars(req, map[string]string{"url": mockUrl})
+			w := httptest.NewRecorder()
+
+			urlShortener.UrlShortenerHandler(w, req)
+
+			resp := w.Result()
+
+			expect(t, resp.StatusCode, 201)
+
+			var urlResponse UrlResponse
+			body, _ := io.ReadAll(resp.Body)
+			json.Unmarshal(body, &urlResponse)
+
+			expect(t, mockUrl, urlResponse.Original)
+			expect(t, mockUrl, urlShortener.UrlMap[urlResponse.Shortened])
 		})
 	})
 }
