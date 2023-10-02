@@ -6,6 +6,7 @@ import (
 	"hash/fnv"
 	"log"
 	"net/http"
+	"path"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -20,8 +21,9 @@ type UrlShortener struct {
 	UrlMap map[string]string
 }
 type UrlResponse struct {
-	Original  string
-	Shortened string
+	Original     string
+	ShortCode    string
+	ShortenedUrl string
 }
 
 func (u UrlShortener) RootHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,15 +39,15 @@ func (u UrlShortener) RootHandler(w http.ResponseWriter, r *http.Request) {
 
 func (u UrlShortener) UrlRedirectHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	url := vars["url"]
+	shortCode := vars["shortCode"]
 
-	if shortenedURL, ok := u.getUrl(url); ok {
-		fmt.Println("Attempting to redirect", url, u.UrlMap[url])
+	if shortenedURL, ok := u.getUrl(shortCode); ok {
+		fmt.Println("Attempting to redirect", shortCode, u.UrlMap[shortCode])
 		http.Redirect(w, r, shortenedURL, http.StatusFound)
 	}
 
 	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprintf(w, "URL not found for: %s", url)
+	fmt.Fprintf(w, "URL not found for: %s", shortCode)
 }
 
 func hashUrl(url string) (hashedUrl string) {
@@ -67,8 +69,9 @@ func (u UrlShortener) UrlShortenerHandler(w http.ResponseWriter, r *http.Request
 	u.UrlMap[hashedUrl] = url
 
 	responseObject := UrlResponse{
-		Original:  url,
-		Shortened: hashedUrl,
+		Original:     url,
+		ShortCode:    hashedUrl,
+		ShortenedUrl: path.Join(Host, hashedUrl),
 	}
 	jsonResponse, err := json.Marshal(&responseObject)
 	if err != nil {
@@ -86,7 +89,7 @@ func buildRouting() *mux.Router {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", urlShortener.RootHandler)
-	router.HandleFunc("/{url}", urlShortener.UrlRedirectHandler)
+	router.HandleFunc("/{shortCode}", urlShortener.UrlRedirectHandler)
 	router.HandleFunc("/shorten/{url}", urlShortener.UrlShortenerHandler)
 
 	return router
