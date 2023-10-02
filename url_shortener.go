@@ -43,10 +43,10 @@ func (u UrlShortener) UrlRedirectHandler(w http.ResponseWriter, r *http.Request)
 	if shortenedURL, ok := u.getUrl(shortCode); ok {
 		fmt.Println("Attempting to redirect", shortCode, u.UrlMap[shortCode])
 		http.Redirect(w, r, shortenedURL, http.StatusFound)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "URL not found for: %s", shortCode)
 	}
-
-	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprintf(w, "URL not found for: %s", shortCode)
 }
 
 func hashUrl(url string) (hashedUrl string) {
