@@ -67,23 +67,26 @@ func Test_URLRedirectHandler(t *testing.T) {
 			assert.Equal(t, string(body), "URL not found for: "+mockShortUrl, "Should return a message with context")
 		})
 
-		urlShortener.UrlMap[mockShortUrl] = mockUrl
+		t.Run("When the short URL does exist", func(t *testing.T) {
 
-		req := httptest.NewRequest("GET", "http://localhost:8000/"+mockShortUrl, nil)
-		req = mux.SetURLVars(req, map[string]string{"url": mockShortUrl})
+			urlShortener.UrlMap[mockShortUrl] = mockUrl
 
-		w := httptest.NewRecorder()
+			req := httptest.NewRequest("GET", "http://localhost:8000/"+mockShortUrl, nil)
+			req = mux.SetURLVars(req, map[string]string{"url": mockShortUrl})
 
-		urlShortener.UrlRedirectHandler(w, req)
+			w := httptest.NewRecorder()
 
-		resp := w.Result()
+			urlShortener.UrlRedirectHandler(w, req)
 
-		location, err := resp.Location()
-		if err != nil {
-			log.Fatal(err)
-		}
+			resp := w.Result()
 
-		assert.Equal(t, resp.StatusCode, 302, "Should return 302, indicating redirect")
-		assert.Equal(t, mockUrl, location.String(), "Should have a location of: "+mockUrl)
+			location, err := resp.Location()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			assert.Equal(t, resp.StatusCode, 302, "Should return 302, indicating redirect")
+			assert.Equal(t, mockUrl, location.String(), "Should have a location of: "+mockUrl)
+		})
 	})
 }
