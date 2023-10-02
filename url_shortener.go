@@ -13,8 +13,7 @@ import (
 )
 
 var (
-	ServerAddr = "8000"
-	Host       = "localhost:8000"
+	ServerAddr = "localhost:8000"
 )
 
 type UrlShortener struct {
@@ -71,7 +70,7 @@ func (u UrlShortener) UrlShortenerHandler(w http.ResponseWriter, r *http.Request
 	responseObject := UrlResponse{
 		Original:     url,
 		ShortCode:    hashedUrl,
-		ShortenedUrl: path.Join(Host, hashedUrl),
+		ShortenedUrl: path.Join(ServerAddr, hashedUrl),
 	}
 	jsonResponse, err := json.Marshal(&responseObject)
 	if err != nil {
