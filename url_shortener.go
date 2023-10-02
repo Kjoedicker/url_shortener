@@ -104,6 +104,6 @@ func RunServer() {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	fmt.Println("Starting server on: ", server.Addr)
+	fmt.Println("Starting server on:", server.Addr)
 	log.Fatal(server.ListenAndServe())
 }
